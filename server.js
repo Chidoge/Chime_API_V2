@@ -10,29 +10,29 @@ const list = require('./controllers/list');
 const messages = require('./controllers/messages');
 
 
-/* Comment these sections out depending on deployment method */
-/* Leave section 1 uncommented for Heroku */
-/* Leave section 2 uncommented for local development and change configurations as necessary */
-
 /* Section 1 */
+const db = knex({
+	client : 'mssql',
+	connection : {
+		server : 'chime.database.windows.net',
+		user: 'rsvpmx',
+		password: 'qwockeD1',
+		options: {
+
+		}
+	}
+});
+
+// /* Section 2 */
 // const db = knex({
 // 	client : 'pg',
 // 	connection : {
-// 		connectionString : process.env.DATABASE_URL,
-// 		ssl : true,
-// 	}
+// 		host : '127.0.0.1',
+// 		user : 'postgres',
+// 		password : '',
+// 		database : 'chime',
+// 	} 
 // });
-
-/* Section 2 */
-const db = knex({
-	client : 'pg',
-	connection : {
-		host : '127.0.0.1',
-		user : 'postgres',
-		password : '',
-		database : 'chime',
-	} 
-});
 
 
 const app = express();
