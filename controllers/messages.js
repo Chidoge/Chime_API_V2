@@ -17,10 +17,11 @@ const auth = require('./auth');
 const handleSendMessage = (req, res, db, bcrypt) => {
 
 	/* Get body of request */
-	const { password, message, isImage } = req.body;
-    let { sender, destination } = req.body;
+	const { password, message } = req.body;
+    let { sender, destination, isImage } = req.body;
     sender = +sender;
-	destination = +destination;
+    destination = +destination;
+    isImage = +isImage;
 
 	if (!sender || !password || !destination || !message) {
 		return res.status(200).json({ code : 3 });
@@ -29,10 +30,10 @@ const handleSendMessage = (req, res, db, bcrypt) => {
     auth.validateUserWithID(db, bcrypt, sender, password)
     .then(isValid => {
         if (isValid) {
-            insertData(db, req, res, message, isImage)
+            insertData(db, sender, destination, res, message, isImage)
             .then(() => {
                 return res.status(200).json({ code : 0 });
-            })	
+            })
         }
         else {
             return res.status(200).json({ code : 1 });
@@ -57,7 +58,7 @@ const handleSendMessage = (req, res, db, bcrypt) => {
  *      messageID: number
  * }
  */
-const handleGetMessages = (req, res, db, bcrypt) => {
+const handleFetchMessages = (req, res, db, bcrypt) => {
 
 	/* Get body of request */
 	const { password } = req.body;
@@ -99,7 +100,7 @@ const insertData = async (db, sender, destination, res, message, isImage) => {
 	let messageInput;
 	
 	if (isImage) {
-		messageInput = await getUrl(mes, fileCode);
+		messageInput = await getUrl(message, fileCode);
 	} else {
 		messageInput = message;
 	}
@@ -113,7 +114,7 @@ const insertData = async (db, sender, destination, res, message, isImage) => {
             destination : destination,
             message : messageInput,
             timestamp : timeStamp,
-            isImage: (isImage === true) ? 1 : 0 
+            isimage: isImage
         })
         .into('messages')
         .returning('*')
@@ -124,6 +125,7 @@ const insertData = async (db, sender, destination, res, message, isImage) => {
     })
     /* Return error if failed */
     .catch(err => {
+        console.log(err)
         return res.json({code : 4 });
     });
 }
@@ -138,5 +140,5 @@ const getUrl = async(b64String) => {
 
 module.exports = {
 	handleSendMessage : handleSendMessage,
-	handleGetMessages : handleGetMessages
+	handleFetchMessages : handleFetchMessages
 }

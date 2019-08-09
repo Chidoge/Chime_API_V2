@@ -46,16 +46,7 @@ const getUsers = async(db, id) => {
 		}
 		onlineUsers.push(userInfo);
 	} 
-	await updateLastSeen(db, id);
 	return onlineUsers;
-
-}
-
-const updateLastSeen = async(db, id) => {
-
-	const timeNow = (new Date).getTime().toString();
-	await db('login').update({ lastseen : timeNow }).where('id','=',id);
-
 }
 
 

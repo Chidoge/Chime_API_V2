@@ -7,6 +7,7 @@ const cors = require('cors');
 // const signIn = require('./controllers/signIn');
 const auth = require('./controllers/auth');
 const list = require('./controllers/list');
+const messages = require('./controllers/messages');
 
 
 /* Comment these sections out depending on deployment method */
@@ -47,6 +48,10 @@ app.get('/', (req, res) => { res.send('Server is up'); });
 
 app.post('/register', (req, res) => { auth.handleRegister(req, res, db, bcrypt) });
 app.post('/signIn', (req, res) => { auth.handleSignIn(req, res, db, bcrypt) });
+
+app.post('/sendMessage', (req, res) => { messages.handleSendMessage(req, res, db, bcrypt)});
+app.post('/fetchMessages', (req, res) => { messages.handleFetchMessages(req, res, db, bcrypt)});
+
 app.get('/getList', (req, res) => { list.handleGetList(req, res, db, bcrypt)});
 
 app.listen(3001, () => {
