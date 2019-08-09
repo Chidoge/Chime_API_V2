@@ -1,0 +1,7 @@
+This text file contains all of the error codes for the API's
+
+0 - Success
+1 - Authentication failed
+2 - Existing username
+3 - Missing parameters
+4 - Internal server error
