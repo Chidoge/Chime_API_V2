@@ -24,7 +24,7 @@ const handleSendMessage = (req, res, bcrypt, pool) => {
 	if (!sender || !password || !destination || !message) {
 		return res.status(200).json({ code : 3 });
 	}
-
+    
     auth.validateUserWithUsername(pool, bcrypt, sender, password)
     .then(isValid => {
         if (isValid) {
@@ -66,6 +66,7 @@ const handleFetchMessages = (req, res, bcrypt, pool) => {
 	const { sender, destination, password } = req.body;
 
 	if (!sender || !password || !destination) {
+
 		return res.status(200).json({ code : 3 });
 	}
 
@@ -98,7 +99,7 @@ const insertData = (pool, sender, destination, message, isImage) => {
     return new Promise((resolve, reject) => {
         const timeStamp = (new Date).getTime();
         if (isImage) {
-            getUrl(message, fileCode)
+            getUrl(message)
             .then(url => {
                 pool.request()
                 .query(`insert into messages (sender, destination, message, timestamp, isimage) values('${sender}', '${destination}', '${url}', '${timeStamp}', '${isImage}')`)

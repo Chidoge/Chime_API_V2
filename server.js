@@ -25,7 +25,12 @@ const config = {
 }
 
 const pool = new sql.ConnectionPool(config, err => {
-	console.log(err);
+	if (err) {
+		console.log(err);
+	}
+	else {
+		console.log("Connected to database successfully");
+	}
 })
 
 /* Body parser to parse json */

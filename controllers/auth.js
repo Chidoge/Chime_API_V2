@@ -141,7 +141,6 @@ const updateLastSeen = (pool, username) => {
 
 
 const validateUserWithUsername = (pool, bcrypt, username, password) => {
-
     return new Promise((resolve, reject) => {
         pool.request()
         .query(`select hash from login where username = '${username}'`)
