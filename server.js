@@ -11,28 +11,30 @@ const messages = require('./controllers/messages');
 
 
 /* Section 1 */
-// const db = knex({
-// 	client : 'mssql',
-// 	connection : {
-// 		server : 'chime.database.windows.net',
-// 		user: 'rsvpmx',
-// 		password: 'qwockeD1',
-// 		options: {
-
-// 		}
-// 	}
-// });
+const db = knex({
+	client : 'mssql',
+	connection : {
+		server : 'chime.database.windows.net',
+		user: 'rsvpmx',
+		password: 'qwockeD1',
+		options: {
+			port: 1433,
+			database: 'chime',
+			encrypt: true
+		}
+	}
+});
 
 // /* Section 2 */
-const db = knex({
-	client : 'pg',
-	connection : {
-		host : '127.0.0.1',
-		user : 'postgres',
-		password : '',
-		database : 'chime',
-	} 
-});
+// const db = knex({
+// 	client : 'pg',
+// 	connection : {
+// 		host : '127.0.0.1',
+// 		user : 'postgres',
+// 		password : '',
+// 		database : 'chime',
+// 	} 
+// });
 
 
 const app = express();
