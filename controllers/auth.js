@@ -102,11 +102,9 @@ const handleSignIn = (req, res, db, bcrypt) => {
 	
 	/* Destructure request body */
 	const { username, password } = req.body;
-
 	if (!(username && password)) {
 		return res.status(400).json({ code : 3 });
 	}
-	
 	validateUserWithUsername(db, bcrypt, username, password)
 	.then(isValid => {
 		if (isValid) {
@@ -174,7 +172,9 @@ const validateUserWithUsername = (db, bcrypt, username, password) => {
 			}
         })
         .catch(err => {
-            reject(false);
+			console.log(err);
+			reject(false);
+			
         })
     })
     

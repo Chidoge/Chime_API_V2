@@ -1,7 +1,7 @@
 This text file contains the queries for setting up the database tables
 
-CREATE TABLE Login(username text not null, hash varchar(100), lastSeen text);
+CREATE TABLE Login(username varchar(max) not null, hash varchar(max), lastSeen varchar(max));
 
-CREATE TABLE Profile(username text not null, first varchar(100), last varchar(100), occupation varchar(30) default 'N/A', picture text default 'http://puu.sh/BHa8O/c8e082dffe.png', about varchar(100) default 'N/A', birthday text default 'N/A', location varchar(50) default 'N/A');
+CREATE TABLE Profile(username varchar(max) not null, first varchar(100), last varchar(100), occupation varchar(max) default 'N/A', picture varchar(max) default 'http://puu.sh/BHa8O/c8e082dffe.png', about varchar(100) default 'N/A', birthday varchar(max) default 'N/A', location varchar(50) default 'N/A');
 
-create table Messages(sender text, destination text, message text, timestamp bigint, isImage smallint);
+create table Messages(sender varchar(max), destination varchar(max), message varchar(max), timestamp bigint, isImage smallint);

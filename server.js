@@ -15,13 +15,11 @@ const db = knex({
 	client : 'mssql',
 	connection : {
 		server : 'chime.database.windows.net',
+		port: 1433,
 		user: 'rsvpmx',
 		password: 'qwockeD1',
-		options: {
-			port: 1433,
-			database: 'chime',
-			encrypt: true
-		}
+		database: 'chime',
+		encrypt: true
 	}
 });
 
