@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt-nodejs');
-// const knex = require('knex');
+const knex = require('knex');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
@@ -10,17 +10,21 @@ const messages = require('./controllers/messages');
 
 
 /* Section 1 */
-// const db = knex({
-// 	client : 'mssql',
-// 	connection : {
-// 		server : 'chime.database.windows.net',
-// 		port: 1433,
-// 		user: 'rsvpmx',
-// 		password: 'qwockeD1',
-// 		database: 'chime',
-// 		encrypt: true
-// 	}
-// });
+const db = knex({
+	client : 'mssql',
+	connection : {
+		server : 'chime.database.windows.net',
+		port: 1433,
+		user: 'rsvpmx',
+		password: 'qwockeD1',
+		database: 'chime',
+		options: {
+			port: 1433,
+			encrypt: true,
+			ssl: true
+		}
+	}
+});
 
 // /* Section 2 */
 // const db = knex({
@@ -45,7 +49,7 @@ app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
 /* API routes */
 app.get('/', (req, res) => { res.json({code :'Server is up'}); });
 
-app.post('/register', (req, res) => { auth.handleRegister(req, res, bcrypt) });
+app.post('/register', (req, res) => { auth.handleRegister(req, res, bcrypt, db) });
 // app.post('/signIn', (req, res) => { auth.handleSignIn(req, res, db, bcrypt) });
 
 // app.post('/sendMessage', (req, res) => { messages.handleSendMessage(req, res, db, bcrypt)});
