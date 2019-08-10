@@ -28,9 +28,14 @@ const handleSendMessage = (req, res, bcrypt, pool) => {
     auth.validateUserWithUsername(pool, bcrypt, sender, password)
     .then(isValid => {
         if (isValid) {
-            insertData(pool, sender, destination, res, message, isImage)
-            .then(() => {
-                return res.status(200).json({ code : 0 });
+            insertData(pool, sender, destination, message, isImage)
+            .then((complete) => {
+                if (complete) {
+                    return res.status(200).json({ code : 0 });
+                }
+                else {
+                    return res.status(200).json({ code : 4 });
+                }
             })
         }
         else {
@@ -88,35 +93,50 @@ const handleFetchMessages = (req, res, bcrypt, pool) => {
 }
 
 
-const insertData = async (pool, sender, destination, res, message, isImage) => {
+const insertData = (pool, sender, destination, message, isImage) => {
 
-    let messageInput;
-
-    if (isImage) {
-        messageInput = await getUrl(message, fileCode);
-    } else {
-        messageInput = message;
-    }
-    
-    const timeStamp = (new Date).getTime();
-    pool.request()
-    .query(`insert into messages (sender, destination, message, timestamp, isimage) values('${sender}', '${destination}', '${messageInput}', '${timeStamp}', '${isImage}')`)
-    .then(result => {
-        return result;
+    return new Promise((resolve, reject) => {
+        const timeStamp = (new Date).getTime();
+        if (isImage) {
+            getUrl(message, fileCode)
+            .then(url => {
+                pool.request()
+                .query(`insert into messages (sender, destination, message, timestamp, isimage) values('${sender}', '${destination}', '${url}', '${timeStamp}', '${isImage}')`)
+                .then(result => {
+                    resolve(true);
+                })
+                /* Return error if failed */
+                .catch(err => {
+                    resolve(false);
+                });
+            });
+        } else {
+            pool.request()
+            .query(`insert into messages (sender, destination, message, timestamp, isimage) values('${sender}', '${destination}', '${message}', '${timeStamp}', '${isImage}')`)
+            .then(result => {
+                resolve(true);
+            })
+            /* Return error if failed */
+            .catch(err => {
+                resolve(false);
+            });
+        }
     })
-    /* Return error if failed */
-    .catch(err => {
-        return res.json({code : 4 });
-    });
 
 }
 
 
 /* Method uses cloudinary API to store images */
-const getUrl = async (b64String) => {
-    cloudConfig.config();
-	const result = await cloudinary.v2.uploader.upload(b64String, { resource_type: 'image', quality: 'auto:low' });
-	return result.secure_url;
+const getUrl = (b64String) => {
+
+    return new Promise((resolve, reject) => {
+        cloudConfig.config();
+        cloudinary.v2.uploader.upload(b64String, { resource_type: 'image', quality: 'auto:low' })
+        .then(result => {
+            resolve(result.secure_url);
+        });
+    })
+
 }
 
 module.exports = {
