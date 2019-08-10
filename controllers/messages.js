@@ -5,8 +5,8 @@ const auth = require('./auth');
 
 /**
  * This API handler takes 5 parameters
- * 1 - sender: number - id of source
- * 2 - destination: number
+ * 1 - sender: string - username of source
+ * 2 - destination: string
  * 3 - password: string - password of sender
  * 4 - message: string - content of message - could be simple message or base64 string representing image
  * 5 - isImage: boolean - indicates whether message is image 
@@ -46,16 +46,16 @@ const handleSendMessage = (req, res, bcrypt, pool) => {
 
 /**
  * This API handler takes 3 parameters
- * 1 - sender: number - id number of user requesting messages
- * 2 - destination: number - target of messages
+ * 1 - sender: string - username of user requesting messages
+ * 2 - destination: string - username of target of messages
  * 3 - password: string - password of user requesting messages
  * 
  * Returns 
  * 1 - code: number - indicates whether API call was successful
  * 2 - messages: [] - {
  *      message: string,
- *      sender: number,
- *      destination: number,
+ *      sender: string,
+ *      destination: string,
  *      timestamp: number,
  *      isImage: number
  * }

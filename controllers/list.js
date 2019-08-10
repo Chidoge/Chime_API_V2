@@ -36,36 +36,34 @@ const getUsers = (pool, username) => {
             const users = result.recordset;
             
             for (var i = 0; i < users.length; i++) {
-                getProfile(pool, users[i].username)
+                getProfile(pool, users[i])
                 .then(user => {
-                    userInfo = {
-						username: users[i].username,
-						lastSeen: +users[i].lastseen,
-                        first : user.first,
-                        last : user.last,
-                        picture : user.picture
-                    }
-                    onlineUsers.push(userInfo);
+                    onlineUsers.push(user);
                 })
             } 
             /* Set time out to let promises resolve */
             setTimeout(() => {
                 resolve(onlineUsers);
-            }, 200)
+            }, 500)
         })
     
     })
 }
 
 
-const getProfile = (pool, username) => {
-
+const getProfile = (pool, user) => {
+	
     return new Promise((resolve, reject) => {
 
         pool.request()
-        .query(`select picture, first, last from profile where username = '${username}'`)
+        .query(`select picture, first, last from profile where username = '${user.username}'`)
         .then(result => {
-            resolve(result.recordset[0]);
+			const userObject = {
+				...result.recordset[0],
+				lastSeen: +user.lastSeen,
+				username: user.username
+			}
+            resolve(userObject);
         })
         
     })
