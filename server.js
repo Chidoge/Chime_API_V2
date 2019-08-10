@@ -11,17 +11,17 @@ const messages = require('./controllers/messages');
 
 
 /* Section 1 */
-const db = knex({
-	client : 'mssql',
-	connection : {
-		server : 'chime.database.windows.net',
-		port: 1433,
-		user: 'rsvpmx',
-		password: 'qwockeD1',
-		database: 'chime',
-		encrypt: true
-	}
-});
+// const db = knex({
+// 	client : 'mssql',
+// 	connection : {
+// 		server : 'chime.database.windows.net',
+// 		port: 1433,
+// 		user: 'rsvpmx',
+// 		password: 'qwockeD1',
+// 		database: 'chime',
+// 		encrypt: true
+// 	}
+// });
 
 // /* Section 2 */
 // const db = knex({
