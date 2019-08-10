@@ -56,7 +56,7 @@ app.post('/fetchMessages', (req, res) => { messages.handleFetchMessages(req, res
 
 app.get('/getList', (req, res) => { list.handleGetList(req, res, db, bcrypt)});
 
-app.listen(3001, () => {
+app.listen(process.env.PORT || 3001, () => {
 	console.log('Server started');
 });
 
