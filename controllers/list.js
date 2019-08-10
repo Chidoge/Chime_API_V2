@@ -31,7 +31,7 @@ const getUsers = (pool, username) => {
 
         /* Get all the users that isn't the user requesting the list */
         pool.request()
-        .query(`select * from login where not username = '${username}'`)
+        .query(`select * from auth where not username = '${username}'`)
         .then(result => {
             const users = result.recordset;
             
