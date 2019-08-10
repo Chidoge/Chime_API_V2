@@ -17,17 +17,15 @@ const auth = require('./auth');
 const handleSendMessage = (req, res, db, bcrypt) => {
 
 	/* Get body of request */
-	const { password, message } = req.body;
-    let { sender, destination, isImage } = req.body;
-    sender = +sender;
-    destination = +destination;
+	const { sender, destination, password, message } = req.body;
+    let { isImage } = req.body;
     isImage = +isImage;
 
 	if (!sender || !password || !destination || !message) {
 		return res.status(200).json({ code : 3 });
 	}
 
-    auth.validateUserWithID(db, bcrypt, sender, password)
+    auth.validateUserWithUsername(db, bcrypt, sender, password)
     .then(isValid => {
         if (isValid) {
             insertData(db, sender, destination, res, message, isImage)
@@ -54,24 +52,19 @@ const handleSendMessage = (req, res, db, bcrypt) => {
  *      sender: number,
  *      destination: number,
  *      timestamp: number,
- *      isImage: number,
- *      messageID: number
+ *      isImage: number
  * }
  */
 const handleFetchMessages = (req, res, db, bcrypt) => {
 
 	/* Get body of request */
-	const { password } = req.body;
-
-    let { sender, destination } = req.body;
-    sender = +sender;
-	destination = +destination;
+	const { sender, destination, password } = req.body;
 
 	if (!sender || !password || !destination) {
 		return res.status(200).json({ code : 3 });
 	}
 
-    auth.validateUserWithID(db, bcrypt, sender, password)
+    auth.validateUserWithUsername(db, bcrypt, sender, password)
     .then(isValid => {
         if (isValid) {
             db.select('*')

@@ -9,9 +9,9 @@
  * Returns
  * 1: code: number - indicates if the API call was successful
  * 2: user object: {
+ * 		username: string,
  *      first: string,
  *      last: string,
- *      id: number,
  *      picture: string
  * }
  */
@@ -29,10 +29,8 @@ const handleRegister = (req, res, db, bcrypt) => {
 	.then(data => {
 		
 		/* If username already exists, send error code back to front-end */
-		if (data != "") {
-			if (data[0].username) {
-				return res.send({ code : 2 });
-			}
+		if (data.length !== 0) {
+			return res.send({ code : 2 });
 		}
 		else {
 
@@ -51,12 +49,12 @@ const handleRegister = (req, res, db, bcrypt) => {
 					lastseen : lastSeen
 				})
 				.into('login')
-				.returning('id')
-				.then(id => {
+				.returning('*')
+				.then(user => {
 					return trx('profile')
 					.returning('*')
 					.insert({
-                        id : id[0],
+                        username: username,
                         first: first,
                         last: last,
 						picture: 'https://i.imgur.com/FSgbIi4.png'
@@ -65,9 +63,9 @@ const handleRegister = (req, res, db, bcrypt) => {
                     .then(user => {
                         return res.status(200).json({ code : 0, 
                                                         user: {
+															username: username,
                                                             first : user[0].first, 
                                                             last : user[0].last, 
-                                                            id : user[0].id, 
                                                             picture : user[0].picture
                                                         } 
                         });
@@ -94,9 +92,9 @@ const handleRegister = (req, res, db, bcrypt) => {
  * Returns
  * 1: code: number - indicates if the API call was successful
  * 2: user object: {
+ * 		username: string,
  *      first: string,
  *      last: string,
- *      id: number,
  *      picture: string
  * }
  */
@@ -107,62 +105,41 @@ const handleSignIn = (req, res, db, bcrypt) => {
 
 	if (!(username && password)) {
 		return res.status(400).json({ code : 3 });
-    }
-    
- 	/* Grab hash from login table of requested login username */
-    db.select('username','hash', 'id').from('login')
-	.where('username','=', username)
-	.then(user => {
-
-		/* Make sure that this username exists */
-		if (user.length !== 0) {
-
-			/* Use synchronous hash compare */
-            const isValid = bcrypt.compareSync(password, user[0].hash);
-            
-			/* On hash match, return the user object from user table */
-			if (isValid) {
-                updateLastSeen(db, username)
-                .then(() => {
-                    getProfile(db, user[0].id)
-                    .then(profile => {
-                        return res.send({ 
-                            code: 0, 
-                            user : {
-                                first : profile.first, 
-                                last : profile.last, 
-                                id : user[0].id, 
-                                picture : profile.picture
-                            }		 
-                        });
-                        
-                    })
-					.catch(err => {
-						return res.status(200).json({ code : 4 });
-					})
+	}
+	
+	validateUserWithUsername(db, bcrypt, username, password)
+	.then(isValid => {
+		if (isValid) {
+			updateLastSeen(db, username)
+			.then(() => {
+				getProfile(db, username)
+				.then(profile => {
+					return res.send({ 
+						code: 0, 
+						user : {
+							username: username,
+							first : profile.first, 
+							last : profile.last, 
+							picture : profile.picture
+						}		 
+					});
+					
 				})
-
-			}
-			/* On password mismatch, send the error code to the front-end */
-			else {
-				return res.json({ code : 1 });
-			}
+				.catch(err => {
+					return res.status(200).json({ code : 4 });
+				})
+			})
 		}
-		/* If username does not exist */
+		/* On password mismatch, send the error code to the front-end */
 		else {
 			return res.json({ code : 1 });
 		}
-
-	})
-	/* On db failure, send error code */
-	.catch(err => {
-		return res.json({ code : 4 });
 	})
 }
 
-const getProfile = async(db, id) => {
+const getProfile = async(db, username) => {
 
-    const profile = await db.select('first', 'last', 'picture').from('profile').where('id','=',id);    
+    const profile = await db.select('first', 'last', 'picture').from('profile').where('username','=',username);    
 	return profile[0];
 }
 
@@ -183,7 +160,6 @@ const updateLastSeen = (db, username) => {
 
 
 const validateUserWithUsername = (db, bcrypt, username, password) => {
-
     return new Promise((resolve, reject) => {
         db.select('hash').from('login')
         .where('username','=', username)
@@ -192,7 +168,10 @@ const validateUserWithUsername = (db, bcrypt, username, password) => {
                 /* Use synchronous hash compare */
                 const isValid = bcrypt.compareSync(password,user[0].hash);
                 resolve(isValid);
-            }
+			}
+			else {
+				resolve(false);
+			}
         })
         .catch(err => {
             reject(false);
@@ -201,26 +180,9 @@ const validateUserWithUsername = (db, bcrypt, username, password) => {
     
 }
 
-const validateUserWithID = (db, bcrypt, id, password) => {
-    return new Promise((resolve, reject) => {
-        db.select('hash').from('login')
-        .where('id','=', id)
-        .then(user => {
-            if (user.length !== 0) {
-                /* Use synchronous hash compare */
-                const isValid = bcrypt.compareSync(password,user[0].hash);
-                resolve(isValid);
-            }
-        })
-        .catch(err => {
-            reject(false);
-        })
-    })
-}
 
 module.exports = {
     handleRegister : handleRegister,
     handleSignIn : handleSignIn,
-    validateUserWithID: validateUserWithID,
     validateUserWithUsername: validateUserWithUsername
 }

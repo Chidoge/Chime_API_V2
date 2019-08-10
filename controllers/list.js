@@ -3,7 +3,7 @@
  * 1 - id: number - id of user requesting the list
  * Returns
  * - list: [] - {
- *      id: number
+ *      username: string,
  *      lastSeen: number,
  *      first: string,
  *      last: string,
@@ -12,33 +12,32 @@
  */
 const handleGetList = (req, res, db, bcrypt) => {
     
-    let { id } = req.query;
-    id = +id;
+    let { username } = req.query;
     
     /* Return all users */
-    getUsers(db, id)
+    getUsers(db, username)
     .then(onlineUsers => {
         return res.json({ code: 0, users : onlineUsers});
     });
 
 }
 
-const getUsers = async(db, id) => {
+const getUsers = async(db, username) => {
 
 	/* Initial array of online users */
 	let onlineUsers = [];
 
 	/* Get all the users that isn't the user requesting the list */
-	const users = await db.select('*').from('login').where('id','!=',id);
+	const users = await db.select('*').from('login').where('username','!=',username);
 
 	for (var i = 0; i < users.length; i++) {
 
 		const user = await db.select('picture', 'first', 'last')
 								.from('profile')
-								.where('id','=', users[i].id);
+								.where('username','=', users[i].username);
 		
 		userInfo = {
-            id : users[i].id,
+			username: users[i].username,
 			lastSeen : users[i].lastseen,
 			first : user[0].first,
 			last : user[0].last,
