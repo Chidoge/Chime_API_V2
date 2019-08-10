@@ -45,7 +45,7 @@ app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
 /* API routes */
 app.get('/', (req, res) => {  res.set({ 'content-type': 'application/json; charset=utf-8' });return res.json({code :'Server is up'}); });
 
-app.post('/register', (req, res) => { auth.handleRegister(req, res, db, bcrypt) });
+app.post('/register', (req, res) => { auth.handleRegister(req, res, bcrypt) });
 // app.post('/signIn', (req, res) => { auth.handleSignIn(req, res, db, bcrypt) });
 
 // app.post('/sendMessage', (req, res) => { messages.handleSendMessage(req, res, db, bcrypt)});

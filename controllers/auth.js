@@ -15,16 +15,38 @@
  *      picture: string
  * }
  */
-const handleRegister = (req, res, db, bcrypt) => {
+const handleRegister = (req, res, bcrypt) => {
+    const config = {
+        user: 'rsvpmx',
+        password: 'qwockeD1',
+        server: 'chime.database.windows.net', // You can use 'localhost\\instance' to connect to named instance
+        database: 'chime',
+        port: 1433,
+        options: {
+            encrypt: true // Use this if you're on Windows Azure
+        }
+    }
+    const sql = require('mssql');
+    sql.connect(config).then(pool => {
+        return pool.request()
+        .query('select * from login')
+        .then(result => {
+            console.log(result.recordset);
+            const { username, first, last, password } = req.body;
 
+            if (!username || !first || !last || !password) {
+                return res.status(400).json({ code : 3 });
+            }
+            sql.close();
+        
+            return res.json({ code: 0 });
+        })
+    })
+
+
+    // sql.
 	/* Destructure request body */
-	const { username, first, last, password } = req.body;
 
-	if (!username || !first || !last || !password) {
-		return res.status(400).json({ code : 3 });
-	}
-
-    return res.json({ code: 0 });
 	// db.select('username').from('login')
 	// .where('username','=', username)
 	// .then(data => {
