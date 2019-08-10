@@ -1,27 +1,26 @@
 const express = require('express');
 const bcrypt = require('bcrypt-nodejs');
-// const knex = require('knex');
+const knex = require('knex');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-// const signIn = require('./controllers/signIn');
 const auth = require('./controllers/auth');
 const list = require('./controllers/list');
 const messages = require('./controllers/messages');
 
 
 /* Section 1 */
-// const db = knex({
-// 	client : 'mssql',
-// 	connection : {
-// 		server : 'chime.database.windows.net',
-// 		port: 1433,
-// 		user: 'rsvpmx',
-// 		password: 'qwockeD1',
-// 		database: 'chime',
-// 		encrypt: true
-// 	}
-// });
+const db = knex({
+	client : 'mssql',
+	connection : {
+		server : 'chime.database.windows.net',
+		port: 1433,
+		user: 'rsvpmx',
+		password: 'qwockeD1',
+		database: 'chime',
+		encrypt: true
+	}
+});
 
 // /* Section 2 */
 // const db = knex({
