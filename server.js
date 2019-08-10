@@ -41,8 +41,8 @@ app.post('/signIn', (req, res) => { auth.handleSignIn(req, res, bcrypt, pool) })
 app.get('/getList', (req, res) => { list.handleGetList(req, res, pool)});
 
 
-// app.post('/sendMessage', (req, res) => { messages.handleSendMessage(req, res, db, bcrypt)});
-// app.post('/fetchMessages', (req, res) => { messages.handleFetchMessages(req, res, db, bcrypt)});
+app.post('/sendMessage', (req, res) => { messages.handleSendMessage(req, res, bcrypt, pool)});
+app.post('/fetchMessages', (req, res) => { messages.handleFetchMessages(req, res, bcrypt, pool)});
 
 
 app.listen(process.env.PORT || 3001, () => {

@@ -56,9 +56,9 @@ const getUsers = (pool, username) => {
     })
 }
 
+
 const getProfile = (pool, username) => {
 
-    
     return new Promise((resolve, reject) => {
 
         pool.request()
