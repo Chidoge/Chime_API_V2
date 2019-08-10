@@ -24,7 +24,7 @@ const handleRegister = (req, res, bcrypt , pool) => {
     }
 
     pool.request()
-    .query(`select username from login where username = '${username}'`)
+    .query(`select username from auth where username = '${username}'`)
     .then(result => {
         if (result.recordset.length !== 0) {
             return res.json({ code: 2 });
@@ -35,7 +35,7 @@ const handleRegister = (req, res, bcrypt , pool) => {
             const hash = bcrypt.hashSync(password);
             const lastSeen = ((new Date).getTime()).toString();
             pool.request()
-            .query(`insert into login (hash, username, lastseen) values ('${hash}', '${username}', '${lastSeen}');`)
+            .query(`insert into auth (hash, username, lastseen) values ('${hash}', '${username}', '${lastSeen}');`)
             .then(result => {
                 pool.request()
                 .query(`insert into profile (username, first, last, picture) values ('${username}', '${first}', '${last}', '${'https://i.imgur.com/FSgbIi4.png'}');`)
@@ -129,7 +129,7 @@ const updateLastSeen = (pool, username) => {
 
         const timeNow = (new Date).getTime();
         pool.request()
-        .query(`update login set lastseen = '${timeNow}' where username = '${username}'`)
+        .query(`update auth set lastseen = '${timeNow}' where username = '${username}'`)
         .then(result => {
             resolve(true);
         })
@@ -141,7 +141,7 @@ const updateLastSeen = (pool, username) => {
 const validateUserWithUsername = (pool, bcrypt, username, password) => {
     return new Promise((resolve, reject) => {
         pool.request()
-        .query(`select hash from login where username = '${username}'`)
+        .query(`select hash from auth where username = '${username}'`)
         .then(result => {
             if (result.recordset.length !== 0) {
                 const user = result.recordset[0];

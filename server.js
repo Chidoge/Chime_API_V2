@@ -46,13 +46,14 @@ app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
 /* API routes */
 app.get('/', (req, res) => { res.json({code :'Server is up'}); });
 
-app.post('/register', (req, res) => { auth.handleRegister(req, res, bcrypt, pool) });
-app.post('/signIn', (req, res) => { auth.handleSignIn(req, res, bcrypt, pool) });
-app.get('/getList', (req, res) => { list.handleGetList(req, res, pool)});
+app.post('/auth/register', (req, res) => { auth.handleRegister(req, res, bcrypt, pool) });
+app.post('/auth/login', (req, res) => { auth.handleSignIn(req, res, bcrypt, pool) });
+
+app.get('/users', (req, res) => { list.handleGetList(req, res, pool)});
 
 
-app.post('/sendMessage', (req, res) => { messages.handleSendMessage(req, res, bcrypt, pool)});
-app.post('/fetchMessages', (req, res) => { messages.handleFetchMessages(req, res, bcrypt, pool)});
+app.post('/messages/send', (req, res) => { messages.handleSendMessage(req, res, bcrypt, pool)});
+app.post('/messages/fetch', (req, res) => { messages.handleFetchMessages(req, res, bcrypt, pool)});
 
 
 
