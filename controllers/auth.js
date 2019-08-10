@@ -20,14 +20,14 @@ const handleRegister = (req, res, bcrypt , pool) => {
     const { username, first, last, password } = req.body;
 
     if (!username || !first || !last || !password) {
-        return res.status(400).json({ code : 3 });
+        return res.status(401).json({ code : 3 });
     }
 
     pool.request()
     .query(`select username from auth where username = '${username}'`)
     .then(result => {
         if (result.recordset.length !== 0) {
-            return res.json({ code: 2 });
+            return res.status(402).json({ code: 2 });
         }
         else {
 
@@ -75,7 +75,7 @@ const handleSignIn = (req, res, bcrypt, pool) => {
 	/* Destructure request body */
 	const { username, password } = req.body;
 	if (!(username && password)) {
-		return res.json({ code : 3 });
+		return res.status(401).json({ code : 3 });
     }
 
 	validateUserWithUsername(pool, bcrypt, username, password)
@@ -104,7 +104,7 @@ const handleSignIn = (req, res, bcrypt, pool) => {
 		}
 		/* On password mismatch, send the error code to the front-end */
 		else {
-			return res.json({ code : 1 });
+			return res.status(403).json({ code : 1 });
 		}
 	})
 }

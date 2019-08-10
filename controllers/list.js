@@ -17,7 +17,7 @@ const handleGetList = (req, res, pool) => {
     /* Return all users */
     getUsers(pool, username)
     .then(onlineUsers => {
-        return res.json({ code: 0, users : onlineUsers});
+        return res.status(200).json({ code: 0, users : onlineUsers});
     });
 
 }

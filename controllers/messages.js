@@ -67,7 +67,7 @@ const handleFetchMessages = (req, res, bcrypt, pool) => {
 
 	if (!sender || !password || !destination) {
 
-		return res.status(200).json({ code : 3 });
+		return res.status(401).json({ code : 3 });
 	}
 
     auth.validateUserWithUsername(pool, bcrypt, sender, password)
@@ -88,7 +88,7 @@ const handleFetchMessages = (req, res, bcrypt, pool) => {
         }
         /* If password is wrong */
         else {
-            return res.status(200).json({ code : 1 });
+            return res.status(403).json({ code : 1 });
         }
     })
 }
