@@ -40,7 +40,7 @@ const getUsers = (pool, username) => {
                 .then(user => {
                     userInfo = {
 						username: users[i].username,
-						lastSeen: users[i].lastseen,
+						lastSeen: +users[i].lastseen,
                         first : user.first,
                         last : user.last,
                         picture : user.picture
