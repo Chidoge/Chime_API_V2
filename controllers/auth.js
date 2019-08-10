@@ -1,5 +1,3 @@
-const db = require('./config');
-
 /**
  * 
  * This API handler takes 4 parameters via request body

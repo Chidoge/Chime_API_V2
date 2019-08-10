@@ -9,9 +9,13 @@ const messages = require('./controllers/messages');
 
 const sql = require('mssql');
 
-
 const app = express();
 app.use(cors());
+
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const config = {
 	user: 'rsvpmx',
@@ -23,6 +27,7 @@ const config = {
 		encrypt: true
 	}
 }
+
 
 const pool = new sql.ConnectionPool(config, err => {
 	if (err) {
