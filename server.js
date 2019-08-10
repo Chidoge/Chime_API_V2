@@ -50,6 +50,7 @@ app.post('/sendMessage', (req, res) => { messages.handleSendMessage(req, res, bc
 app.post('/fetchMessages', (req, res) => { messages.handleFetchMessages(req, res, bcrypt, pool)});
 
 
+
 app.listen(process.env.PORT || 3001, () => {
 	console.log('Server started');
 });
