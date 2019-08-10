@@ -58,8 +58,11 @@ const getProfile = (pool, user) => {
         pool.request()
         .query(`select picture, first, last from profile where username = '${user.username}'`)
         .then(result => {
+			const row = result.recordset[0];
 			const userObject = {
-				...result.recordset[0],
+				first: row.first,
+				last: row.last,
+				picture: row.picture,
 				lastSeen: +user.lastSeen,
 				username: user.username
 			}
