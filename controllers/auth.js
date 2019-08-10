@@ -31,13 +31,14 @@ const handleRegister = (req, res, bcrypt) => {
         return pool.request()
         .query('select * from login')
         .then(result => {
+            sql.close();
+
             console.log(result.recordset);
             const { username, first, last, password } = req.body;
 
             if (!username || !first || !last || !password) {
                 return res.status(400).json({ code : 3 });
             }
-            sql.close();
         
             return res.json({ code: 0 });
         })
