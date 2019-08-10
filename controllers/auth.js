@@ -17,60 +17,43 @@ const db = require('./config');
  *      picture: string
  * }
  */
-const handleRegister = (req, res, bcrypt , db) => {
+const handleRegister = (req, res, bcrypt , pool) => {
 
     const { username, first, last, password } = req.body;
 
     if (!username || !first || !last || !password) {
         return res.status(400).json({ code : 3 });
     }
-    const config = {
-        user: 'rsvpmx',
-        password: 'qwockeD1',
-        server: 'chime.database.windows.net', 
-        database: 'chime',
-        port: 1433,
-        options: {
-            encrypt: true 
-        }
-    }
 
-    const sql = require('mssql');
-    sql.connect(config).then(pool => {
-        return pool.request()
-        .query(`select username from login where username = '${username}'`)
-        .then(result => {
-            sql.close();
-            if (result.recordset.length !== 0) {
-                return res.json({ code: 2 });
-            }
-            else {
-                /* Synchronous hashing */
-                const hash = bcrypt.hashSync(password);
-                const lastSeen = ((new Date).getTime()).toString();
-                sql.connect(config).then(pool => {
-                    return pool.request()
-                    .query(`insert into login (hash, username, lastseen) values ('${hash}', '${username}', '${lastSeen}');`)
-                    .then(result => {
-                        sql.close()
-                        sql.connect(config).then(pool => {
-                            return pool.request()
-                            .query(`insert into profile (username, first, last, picture) values ('${username}', '${first}', '${last}', '${'https://i.imgur.com/FSgbIi4.png'}');`)
-                            .then(result => {
-                                return res.status(200).json({ code : 0, 
-                                    user: {
-                                        username: username,
-                                        first : first, 
-                                        last : last, 
-                                        picture : picture
-                                    }}) 
-                            })
-                        })
-                    })
+    pool.request()
+    .query(`select username from login where username = '${username}'`)
+    .then(result => {
+        if (result.recordset.length !== 0) {
+            return res.json({ code: 2 });
+        }
+        else {
+
+            /* Synchronous hashing */
+            const hash = bcrypt.hashSync(password);
+            const lastSeen = ((new Date).getTime()).toString();
+            pool.request()
+            .query(`insert into login (hash, username, lastseen) values ('${hash}', '${username}', '${lastSeen}');`)
+            .then(result => {
+                pool.request()
+                .query(`insert into profile (username, first, last, picture) values ('${username}', '${first}', '${last}', '${'https://i.imgur.com/FSgbIi4.png'}');`)
+                .then(result => {
+                    return res.status(200).json({ code : 0, 
+                        user: {
+                            username: username,
+                            first : first, 
+                            last : last, 
+                            picture : 'https://i.imgur.com/FSgbIi4.png'
+                        }}) 
                 })
-            }
-        })
-    })
+                
+            })
+        }
+    });
 }
 
 
@@ -89,7 +72,7 @@ const handleRegister = (req, res, bcrypt , db) => {
  *      picture: string
  * }
  */
-const handleSignIn = (req, res, bcrypt) => {
+const handleSignIn = (req, res, bcrypt, pool) => {
 	
 	/* Destructure request body */
 	const { username, password } = req.body;
@@ -97,12 +80,12 @@ const handleSignIn = (req, res, bcrypt) => {
 		return res.json({ code : 3 });
     }
 
-	validateUserWithUsername(bcrypt, username, password)
+	validateUserWithUsername(pool, bcrypt, username, password)
 	.then(isValid => {
 		if (isValid) {
-			updateLastSeen(username)
+			updateLastSeen(pool, username)
 			.then(() => {
-				getProfile(username)
+				getProfile(pool, username)
 				.then(profile => {
 					return res.send({ 
 						code: 0, 
@@ -128,96 +111,55 @@ const handleSignIn = (req, res, bcrypt) => {
 	})
 }
 
-const getProfile = (username) => {
+const getProfile = (pool, username) => {
 
     return new Promise((resolve, reject) => {
-        const config = {
-            user: 'rsvpmx',
-            password: 'qwockeD1',
-            server: 'chime.database.windows.net', // You can use 'localhost\\instance' to connect to named instance
-            database: 'chime',
-            port: 1433,
-            options: {
-                encrypt: true // Use this if you're on Windows Azure
-            }
-        }
 
-        const sql = require('mssql');
-        sql.connect(config).then(pool => {
-            return pool.request()
-            .input('username', sql.VarChar, username)
-            .query(`select * from profile where username = '${username}'`)
-            .then(result => {
-                sql.close();
-                const profile = result.recordset[0];
-                resolve(profile);
-            })
+        pool.request()
+        .query(`select * from profile where username = '${username}'`)
+        .then(result => {
+            const profile = result.recordset[0];
+            resolve(profile);
         })
+        
     })
 }
 
-const updateLastSeen = (username) => {
+const updateLastSeen = (pool, username) => {
 
     return new Promise((resolve, reject) => {
-        const config = {
-            user: 'rsvpmx',
-            password: 'qwockeD1',
-            server: 'chime.database.windows.net', // You can use 'localhost\\instance' to connect to named instance
-            database: 'chime',
-            port: 1433,
-            options: {
-                encrypt: true // Use this if you're on Windows Azure
-            }
-        }
-    
-        const sql = require('mssql');
+
         const timeNow = (new Date).getTime();
-        sql.connect(config).then(pool => {
-            return pool.request()
-            .query(`update login set lastseen = '${timeNow}' where username = '${username}'`)
-            .then(result => {
-                sql.close();
-                resolve(true);
-            })
+        pool.request()
+        .query(`update login set lastseen = '${timeNow}' where username = '${username}'`)
+        .then(result => {
+            resolve(true);
         })
+        
     })
 }
 
 
-const validateUserWithUsername = (bcrypt, username, password) => {
-
-    const config = {
-        user: 'rsvpmx',
-        password: 'qwockeD1',
-        server: 'chime.database.windows.net', 
-        database: 'chime',
-        port: 1433,
-        options: {
-            encrypt: true
-        }
-    }
+const validateUserWithUsername = (pool, bcrypt, username, password) => {
 
     return new Promise((resolve, reject) => {
-        const sql = require('mssql');
-        sql.connect(config).then(pool => {
-            return pool.request()
-            .input('username', sql.VarChar, username)
-            .query(`select hash from login where username = '${username}'`)
-            .then(result => {
-                sql.close();
-                if (result.recordset.length !== 0) {
-                    const user = result.recordset[0];
-                    /* Use synchronous hash compare */
-                    const isValid = bcrypt.compareSync(password,user.hash);
-                    resolve(isValid);
-                }
-                else {
-                    resolve(false);
-                }
-            })
+        pool.request()
+        .query(`select hash from login where username = '${username}'`)
+        .then(result => {
+            if (result.recordset.length !== 0) {
+                const user = result.recordset[0];
+                /* Use synchronous hash compare */
+                const isValid = bcrypt.compareSync(password,user.hash);
+                resolve(isValid);
+            }
+            else {
+                resolve(false);
+            }
         })
     })
-    
+
+
+
 }
 
 
