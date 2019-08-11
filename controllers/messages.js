@@ -84,6 +84,9 @@ const handleFetchMessages = (req, res, bcrypt, pool) => {
                 const messages = result.recordset;
                 return res.status(200).json({ code : 0 , messages : messages });
             })
+            .catch(err => {
+                return res.status(404).json({ code: 1 });
+            })
         
         }
         /* If password is wrong */

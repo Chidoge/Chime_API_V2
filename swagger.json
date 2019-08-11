@@ -220,10 +220,10 @@
             {
               "in": "body",
               "name": "body",
-              "description": "Username and password",
+              "description": "Fetch message configurations",
               "required": true,
               "schema": {
-                "$ref": "#/definitions/Auth object"
+                "$ref": "#/definitions/FetchMessageConfig"
               }
             }
           ],
@@ -418,6 +418,23 @@
           "isImage": {
             "type": "integer",
             "example": "0"
+          }
+        }
+      },
+      "FetchMessageConfig": {
+        "type": "object",
+        "properties": {
+          "sender": {
+            "type": "string",
+            "example": "rsvpmx"
+          },
+          "password": {
+            "type": "string",
+            "example": "secret123"
+          },
+          "destination": {
+            "type": "string",
+            "example": "jsmith123"
           }
         }
       },
