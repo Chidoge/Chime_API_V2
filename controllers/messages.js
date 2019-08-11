@@ -29,17 +29,17 @@ const handleSendMessage = (req, res, bcrypt, pool) => {
     .then(isValid => {
         if (isValid) {
             insertData(pool, sender, destination, message, isImage)
-            .then((complete) => {
-                if (complete) {
+            .then((result) => {
+                if (result === 'Success') {
                     return res.status(200).json({ code : 0 });
                 }
                 else {
-                    return res.status(200).json({ code : 4 });
+                    return res.status(404).json({ code : 4 });
                 }
             })
         }
         else {
-            return res.status(200).json({ code : 1 });
+            return res.status(403).json({ code : 1 });
         }
     })
 }
@@ -104,22 +104,22 @@ const insertData = (pool, sender, destination, message, isImage) => {
                 pool.request()
                 .query(`insert into messages (sender, destination, message, timestamp, isimage) values('${sender}', '${destination}', '${url}', '${timeStamp}', '${isImage}')`)
                 .then(result => {
-                    resolve(true);
+                    resolve('Success');
                 })
                 /* Return error if failed */
                 .catch(err => {
-                    resolve(false);
+                    resolve('No such user');
                 });
             });
         } else {
             pool.request()
             .query(`insert into messages (sender, destination, message, timestamp, isimage) values('${sender}', '${destination}', '${message}', '${timeStamp}', '${isImage}')`)
             .then(result => {
-                resolve(true);
+                resolve('Success');
             })
             /* Return error if failed */
             .catch(err => {
-                resolve(false);
+                resolve('No such user');
             });
         }
     })

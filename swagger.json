@@ -170,9 +170,7 @@
               }
             }
           }
-        }
-      },
-      "/user": {
+        },
         "delete": {
           "tags": [
             "user"
@@ -203,6 +201,82 @@
             },
             "400": {
               "description": "Account not found or invalid credentials"
+            }
+          }
+        }
+      },
+      "/messages/fetch": {
+        "post": {
+          "tags": [
+            "messages"
+          ],
+          "summary": "Fetches messages for a user",
+          "description": "Fetches messages for a user",
+          "operationId": "fetchMessages",
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "in": "body",
+              "name": "body",
+              "description": "Username and password",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/Auth object"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/FetchedMessage"
+                }
+              }
+            },
+            "403": {
+              "description": "Authentication failed."
+            }
+          }
+        }
+      },
+      "/messages/send": {
+        "post": {
+          "tags": [
+            "messages"
+          ],
+          "summary": "Send message to a user",
+          "description": "Send message from authenticated user to another user",
+          "operationId": "sendMessage",
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "in": "body",
+              "name": "body",
+              "description": "Message configurations",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/SendMessageConfig"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "schema": {
+                "$ref": "#/definitions/APIResponse"
+              }
+            },
+            "403": {
+              "description": "Authentication failed"
+            },
+            "404": {
+              "description": "Destination account does not exist"
             }
           }
         }
@@ -319,6 +393,65 @@
           "location": {
             "type": "string",
             "example": "Auckland"
+          }
+        }
+      },
+      "FetchedMessage": {
+        "type": "object",
+        "properties": {
+          "sender": {
+            "type": "string",
+            "example": "rsvpmx"
+          },
+          "destination": {
+            "type": "string",
+            "example": "jsmith123"
+          },
+          "message": {
+            "type": "string",
+            "example": "Hi there."
+          },
+          "timestamp": {
+            "type": "integer",
+            "example": "1565446365"
+          },
+          "isImage": {
+            "type": "integer",
+            "example": "0"
+          }
+        }
+      },
+      "SendMessageConfig": {
+        "type": "object",
+        "properties": {
+          "sender": {
+            "type": "string",
+            "example": "rsvpmx"
+          },
+          "password": {
+            "type": "string",
+            "example": "secret123"
+          },
+          "destination": {
+            "type": "string",
+            "example": "jsmith123"
+          },
+          "message": {
+            "type": "string",
+            "example": "Hi there."
+          },
+          "isImage": {
+            "type": "integer",
+            "example": "0"
+          }
+        }
+      },
+      "APIResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": "0"
           }
         }
       }
