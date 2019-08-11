@@ -5,7 +5,7 @@ const handleDeleteUser = (req, res, bcrypt, pool) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-        return res.status(401).json({ code: 3 });
+        return res.status(400).json({ code: 3 });
     }
 
     auth.validateUserWithUsername(pool, bcrypt, username, password)
@@ -19,10 +19,13 @@ const handleDeleteUser = (req, res, bcrypt, pool) => {
                 .then(() => {
                     return res.status(200).json({ code: 0 });
                 })
+                .catch(err => {
+                    return res.status(500).json({ code: 4 });
+                })
             })
         }
         else {
-            return res.status(404).json({ code: 1 });
+            return res.status(403).json({ code: 1 });
         }
     })
 }

@@ -8,8 +8,7 @@ This text file contains all of the error codes for the API's
 5 - account not found
 
 http status
-401 - missing parameters
-402 - existing user
-403 - auth failed
+400 - missing parameters
+403 - auth failed, existing user
 404 - account not found
 200 - success

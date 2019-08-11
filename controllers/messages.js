@@ -22,7 +22,7 @@ const handleSendMessage = (req, res, bcrypt, pool) => {
     isImage = +isImage;
 
 	if (!sender || !password || !destination || !message) {
-		return res.status(200).json({ code : 3 });
+		return res.status(400).json({ code : 3 });
 	}
     
     auth.validateUserWithUsername(pool, bcrypt, sender, password)
@@ -67,7 +67,7 @@ const handleFetchMessages = (req, res, bcrypt, pool) => {
 
 	if (!sender || !password || !destination) {
 
-		return res.status(401).json({ code : 3 });
+		return res.status(400).json({ code : 3 });
 	}
 
     auth.validateUserWithUsername(pool, bcrypt, sender, password)
@@ -113,7 +113,11 @@ const insertData = (pool, sender, destination, message, isImage) => {
                 .catch(err => {
                     resolve(false);
                 });
-            });
+            })
+            /* If failed to upload */
+            .catch(err => {
+                resolve(false);
+            })
         } else {
             pool.request()
             .query(`insert into messages (sender, destination, message, timestamp, isimage) values('${sender}', '${destination}', '${message}', '${timeStamp}', '${isImage}')`)
@@ -138,7 +142,10 @@ const getUrl = (b64String) => {
         cloudinary.v2.uploader.upload(b64String, { resource_type: 'image', quality: 'auto:low' })
         .then(result => {
             resolve(result.secure_url);
-        });
+        })
+        .catch(() => {
+            reject();
+        })
     })
 
 }

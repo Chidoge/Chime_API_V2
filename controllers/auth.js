@@ -75,7 +75,7 @@ const handleSignIn = (req, res, bcrypt, pool) => {
 	/* Destructure request body */
 	const { username, password } = req.body;
 	if (!(username && password)) {
-		return res.status(401).json({ code : 3 });
+		return res.status(400).json({ code : 3 });
     }
 
 	validateUserWithUsername(pool, bcrypt, username, password)
@@ -85,6 +85,7 @@ const handleSignIn = (req, res, bcrypt, pool) => {
 			.then(() => {
 				getProfile(pool, username)
 				.then(profile => {
+                    /* Profile must exist after validation*/
 					return res.send({ 
 						code: 0, 
 						user : {
@@ -118,6 +119,9 @@ const getProfile = (pool, username) => {
             const profile = result.recordset[0];
             resolve(profile);
         })
+        .catch(err => {
+            resolve(false);
+        })
         
     })
 }
@@ -131,6 +135,9 @@ const updateLastSeen = (pool, username) => {
         .query(`update auth set lastseen = '${timeNow}' where username = '${username}'`)
         .then(result => {
             resolve(true);
+        })
+        .catch(err => {
+            resolve(false);
         })
         
     })
@@ -151,6 +158,9 @@ const validateUserWithUsername = (pool, bcrypt, username, password) => {
             else {
                 resolve(false);
             }
+        })
+        .catch(err => {
+            resolve(false);
         })
     })
 

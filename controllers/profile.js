@@ -14,7 +14,7 @@ const handleGetProfile = (req, res, pool) => {
             return res.status(200).json({ code: 0, user: user });
         }
         else {
-            return res.status(404).json({ code: 4 });
+            return res.status(404).json({ code: 5 });
         }
     })
 }
@@ -104,7 +104,6 @@ const updateProfile = (pool, username, about, birthday, location, occupation) =>
             resolve(true);
         })
         .catch(err => {
-            console.log(err);
             resolve(false);
         })
     })

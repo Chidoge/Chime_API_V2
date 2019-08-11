@@ -24,7 +24,6 @@ const handleGetList = (req, res, pool) => {
 
 const getUsers = (pool, username) => {
 
-
     return new Promise((resolve, reject) => {
         /* Initial array of online users */
         let onlineUsers = [];
@@ -45,6 +44,9 @@ const getUsers = (pool, username) => {
             setTimeout(() => {
                 resolve(onlineUsers);
             }, 500)
+        })
+        .catch(err => {
+            return res.status(500).json({code: 4});
         })
     
     })
@@ -68,7 +70,9 @@ const getProfile = (pool, user) => {
 			}
             resolve(userObject);
         })
-        
+        .catch(err => {
+            console.log(err);
+        })  
     })
 }
  
