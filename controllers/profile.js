@@ -4,7 +4,11 @@ const uploader = require('./messages');
 const handleGetProfile = (req, res, pool) => {
 
     /* Identify user from query string */
-	const { username } = req.query;
+    const { username } = req.query;
+    
+    if (!username) {
+        return res.status(400).json({ code: 3 });
+    }
 	
     pool.request()
     .query(`select * from profile where username = '${username}'`)
@@ -17,6 +21,9 @@ const handleGetProfile = (req, res, pool) => {
             return res.status(404).json({ code: 5 });
         }
     })
+    .catch(err => {
+        return res.status(500).json({ code: 4 });
+    })
 }
 
 
@@ -25,10 +32,14 @@ const handleSaveProfile = (req, res, bcrypt, pool) => {
     /* Validate user */
     const { username, password } = req.body;
 
+    if (!username || !password) {
+        return res.status(500).json({ code: 4 });
+    }
+
     auth.validateUserWithUsername(pool, bcrypt, username, password)
     .then(isValid => {
         if (isValid) {
-            saveProfile(req, res, pool);
+            return saveProfile(req, res, pool);
         }
         else {
             return res.status(403).json({ code: 1 });
@@ -54,6 +65,12 @@ const saveProfile = (req, res, pool) => {
                     return res.status(500).json({ code: 4});
                 }
             })
+            .catch(err => {
+                return res.status(500).json({ code: 4});
+            })
+        })
+        .catch(err => {
+            return res.status(500).json({ code: 4});
         })
     }
     else {

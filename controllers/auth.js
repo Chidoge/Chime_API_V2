@@ -20,14 +20,14 @@ const handleRegister = (req, res, bcrypt , pool) => {
     const { username, first, last, password } = req.body;
 
     if (!username || !first || !last || !password) {
-        return res.status(401).json({ code : 3 });
+        return res.status(400).json({ code : 3 });
     }
 
     pool.request()
     .query(`select username from auth where username = '${username}'`)
     .then(result => {
         if (result.recordset.length !== 0) {
-            return res.status(402).json({ code: 2 });
+            return res.status(403).json({ code: 2 });
         }
         else {
 
@@ -48,7 +48,13 @@ const handleRegister = (req, res, bcrypt , pool) => {
                             picture : 'https://i.imgur.com/FSgbIi4.png'
                         }}) 
                 })
+                .catch(err => {
+                    return res.status(500).json({ code: 4 });
+                })
                 
+            })
+            .catch(err => {
+                return res.status(500).json({ code: 4 });
             })
         }
     });
@@ -86,7 +92,7 @@ const handleSignIn = (req, res, bcrypt, pool) => {
 				getProfile(pool, username)
 				.then(profile => {
                     /* Profile must exist after validation*/
-					return res.send({ 
+					return res.status(200).json({ 
 						code: 0, 
 						user : {
 							username: username,

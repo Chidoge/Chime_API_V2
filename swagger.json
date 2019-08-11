@@ -58,12 +58,15 @@
             "200": {
               "description": "Success"
             },
-            "401": {
+            "400": {
               "description": "Missing parameters"
             },
-            "402": {
+            "403": {
               "description": "Existing username"
-            }
+            },
+            "500": {
+              "description": "Internal server error"
+            }            
           }
         }
       },
@@ -99,11 +102,14 @@
                 "$ref": "#/definitions/AuthorizedUser"
               }
             },
-            "401": {
+            "400": {
               "description": "Missing parameters"
             },
             "403": {
               "description": "Authentication failed"
+            },
+            "500": {
+              "description": "Internal server error"
             }
           }
         }
@@ -135,8 +141,14 @@
                 "$ref": "#/definitions/Profile"
               }
             },
+            "400": {
+              "description": "Missing parameters"
+            },
             "404": {
               "description": "Account not found"
+            },
+            "500": {
+              "description": "Internal server error"
             }
           }
         },
@@ -168,8 +180,14 @@
                 "$ref": "#/definitions/Profile"
               }
             },
-            "404": {
-              "description": "Account not found"
+            "400": {
+              "description": "Missing parameters"
+            },
+            "403": {
+              "description": "Authentication failed"
+            },
+            "500": {
+              "description": "Internal server error"
             }
           }
         }
@@ -201,6 +219,12 @@
                   "$ref": "#/definitions/ListUser"
                 }
               }
+            },
+            "400": {
+              "description": "Missing parameters"
+            },
+            "500": {
+              "description": "Internal server error"
             }
           }
         },
@@ -233,7 +257,13 @@
               }
             },
             "400": {
-              "description": "Account not found or invalid credentials"
+              "description": "Missing parameters"
+            },
+            "403": {
+              "description": "Authentication failed"
+            },
+            "500": {
+              "description": "Internal server error"
             }
           }
         }
@@ -270,8 +300,14 @@
                 }
               }
             },
+            "400": {
+              "description": "Missing parameters"
+            },
             "403": {
-              "description": "Authentication failed."
+              "description": "Authentication failed"
+            },
+            "500": {
+              "description": "Internal server error"
             }
           }
         }
@@ -305,11 +341,14 @@
                 "$ref": "#/definitions/APIResponse"
               }
             },
+            "400": {
+              "description": "Missing parameters"
+            },
             "403": {
               "description": "Authentication failed"
             },
-            "404": {
-              "description": "Destination account does not exist"
+            "500": {
+              "description": "Internal server error"
             }
           }
         }

@@ -13,11 +13,18 @@
 const handleGetList = (req, res, pool) => {
     
     let { username } = req.query;
+
+    if (!username) {
+        return res.status(400).json({ code : 3 });
+    }
     
     /* Return all users */
     getUsers(pool, username)
     .then(onlineUsers => {
         return res.status(200).json({ code: 0, users : onlineUsers});
+    })
+    .catch(err => {
+        return res.status(500).json({ code : 4 });
     });
 
 }
@@ -46,7 +53,7 @@ const getUsers = (pool, username) => {
             }, 500)
         })
         .catch(err => {
-            return res.status(500).json({code: 4});
+            reject(err);
         })
     
     })

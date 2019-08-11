@@ -38,6 +38,7 @@ const handleSendMessage = (req, res, bcrypt, pool) => {
                 }
             })
         }
+        /* password mismatch */
         else {
             return res.status(403).json({ code : 1 });
         }
