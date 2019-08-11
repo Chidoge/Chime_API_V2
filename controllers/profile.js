@@ -59,7 +59,15 @@ const saveProfile = (req, res, pool) => {
             updateProfileUrl(pool, username, about, birthday, location, occupation, url)
             .then(complete => {
                 if (complete) {
-                    return res.status(200).json({ code: 0});
+                    pool.request()
+                    .query(`select * from profile where username = '${username}'`)
+                    .then(result => {
+                        const user = result.recordset[0];
+                        return res.status(200).json({ code: 0, user: user });
+                    })
+                    .catch(() => {
+                        return res.status(500).json({ code: 4});    
+                    })
                 }
                 else {
                     return res.status(500).json({ code: 4});
@@ -77,7 +85,15 @@ const saveProfile = (req, res, pool) => {
         updateProfile(pool, username, about, birthday, location, occupation)
         .then(complete => {
             if (complete) {
-                return res.status(200).json({ code: 0});
+                pool.request()
+                .query(`select * from profile where username = '${username}'`)
+                .then(result => {
+                    const user = result.recordset[0];
+                    return res.status(200).json({ code: 0, user: user });
+                })
+                .catch(() => {
+                    return res.status(500).json({ code: 4});    
+                })
             }
             else {
                 return res.status(500).json({ code: 4});
