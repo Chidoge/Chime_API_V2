@@ -19,6 +19,7 @@ const handleGetProfile = (req, res, pool) => {
     })
 }
 
+
 const handleSaveProfile = (req, res, bcrypt, pool) => {
 
     /* Validate user */
