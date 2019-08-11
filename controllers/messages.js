@@ -29,12 +29,12 @@ const handleSendMessage = (req, res, bcrypt, pool) => {
     .then(isValid => {
         if (isValid) {
             insertData(pool, sender, destination, message, isImage)
-            .then((result) => {
-                if (result === 'Success') {
+            .then(complete => {
+                if (complete) {
                     return res.status(200).json({ code : 0 });
                 }
                 else {
-                    return res.status(404).json({ code : 4 });
+                    return res.status(500).json({ code: 4 });
                 }
             })
         }
@@ -85,7 +85,7 @@ const handleFetchMessages = (req, res, bcrypt, pool) => {
                 return res.status(200).json({ code : 0 , messages : messages });
             })
             .catch(err => {
-                return res.status(404).json({ code: 1 });
+                return res.status(500).json({ code: 4 });
             })
         
         }
@@ -107,22 +107,22 @@ const insertData = (pool, sender, destination, message, isImage) => {
                 pool.request()
                 .query(`insert into messages (sender, destination, message, timestamp, isimage) values('${sender}', '${destination}', '${url}', '${timeStamp}', '${isImage}')`)
                 .then(result => {
-                    resolve('Success');
+                    resolve(true);
                 })
                 /* Return error if failed */
                 .catch(err => {
-                    resolve('No such user');
+                    resolve(false);
                 });
             });
         } else {
             pool.request()
             .query(`insert into messages (sender, destination, message, timestamp, isimage) values('${sender}', '${destination}', '${message}', '${timeStamp}', '${isImage}')`)
             .then(result => {
-                resolve('Success');
+                resolve(true);
             })
             /* Return error if failed */
             .catch(err => {
-                resolve('No such user');
+                resolve(false);
             });
         }
     })
@@ -145,5 +145,6 @@ const getUrl = (b64String) => {
 
 module.exports = {
 	handleSendMessage : handleSendMessage,
-	handleFetchMessages : handleFetchMessages
+    handleFetchMessages : handleFetchMessages,
+    getUrl: getUrl
 }

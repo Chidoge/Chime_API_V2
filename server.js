@@ -6,6 +6,7 @@ const cors = require('cors');
 const auth = require('./controllers/auth');
 const list = require('./controllers/list');
 const users = require('./controllers/users');
+const profile = require('./controllers/profile');
 const messages = require('./controllers/messages');
 
 const sql = require('mssql');
@@ -56,6 +57,9 @@ app.delete('/users', (req, res) => { users.handleDeleteUser(req, res, bcrypt, po
 
 app.post('/messages/send', (req, res) => { messages.handleSendMessage(req, res, bcrypt, pool)});
 app.post('/messages/fetch', (req, res) => { messages.handleFetchMessages(req, res, bcrypt, pool)});
+
+app.get('/profile', (req, res) => { profile.handleGetProfile(req, res, pool)});
+app.put('/profile', (req, res) => { profile.handleSaveProfile(req, res, bcrypt, pool)});
 
 
 

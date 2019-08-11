@@ -5,6 +5,7 @@ This text file contains all of the error codes for the API's
 2 - Existing username
 3 - Missing parameters
 4 - Internal server error
+5 - account not found
 
 http status
 401 - missing parameters

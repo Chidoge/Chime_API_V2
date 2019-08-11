@@ -97,8 +97,7 @@ const handleSignIn = (req, res, bcrypt, pool) => {
 					
 				})
 				.catch(err => {
-                    console.log(err);
-					return res.status(200).json({ code : 4 });
+                    return res.status(500).json({ code: 4 });
 				})
 			})
 		}

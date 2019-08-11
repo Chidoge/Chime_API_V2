@@ -8,7 +8,7 @@
         "email": "lincoln.choy1997@gmail.com"
       }
     },
-    "host": "chimemsa.azurewebsites.net",
+    "host": "localhost:3001",
     "basePath": "",
     "tags": [
       {
@@ -126,6 +126,39 @@
               "description": "Username of profile that needs to be fetched",
               "required": true,
               "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "schema": {
+                "$ref": "#/definitions/Profile"
+              }
+            },
+            "404": {
+              "description": "Account not found"
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "profile"
+          ],
+          "summary": "Update profile",
+          "description": "Updates profile for a user",
+          "operationId": "updateProfile",
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "description": "New profile details and authentication details",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/ProfileAuth"
+              }
             }
           ],
           "responses": {
@@ -378,6 +411,10 @@
             "type": "string",
             "example": "Smith"
           },
+          "occupation": {
+            "type": "string",
+            "example": "Student"
+          },
           "picture": {
             "type": "string",
             "example": "https://i.imgur.com/FSgbIi4.png"
@@ -460,6 +497,39 @@
           "isImage": {
             "type": "integer",
             "example": "0"
+          }
+        }
+      },
+      "ProfileAuth": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "rsvpmx"
+          },
+          "password": {
+            "type": "string",
+            "example": "secret123"
+          },
+          "occupation": {
+            "type": "string",
+            "example": "Student"
+          },
+          "picture": {
+            "type": "string",
+            "example": "--needs to be a base64 string--"
+          },
+          "about": {
+            "type": "string",
+            "example": "I like food."
+          },
+          "birthday": {
+            "type": "string",
+            "example": "12/12/1997"
+          },
+          "location": {
+            "type": "string",
+            "example": "Auckland"
           }
         }
       },
