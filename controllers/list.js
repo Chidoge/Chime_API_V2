@@ -1,3 +1,5 @@
+const auth = require('./auth');
+
 // /**
 //  * This API handler takes 1 parameter
 //  * 1 - id: number - id of user requesting the list
@@ -36,7 +38,7 @@ const getUsers = (pool, username) => {
         let onlineUsers = [];
 
         /* Get all the users that isn't the user requesting the list */
-        updateLastSeen(pool, username)
+        auth.updateLastSeen(pool, username)
         .then(complete => {
             pool.request()
             .query(`select * from auth where not username = '${username}'`)
