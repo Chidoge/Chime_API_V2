@@ -178,5 +178,6 @@ const validateUserWithUsername = (pool, bcrypt, username, password) => {
 module.exports = {
     handleRegister : handleRegister,
     handleSignIn : handleSignIn,
+    updateLastSeen: updateLastSeen,
     validateUserWithUsername: validateUserWithUsername
 }

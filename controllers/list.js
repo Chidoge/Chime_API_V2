@@ -36,26 +36,28 @@ const getUsers = (pool, username) => {
         let onlineUsers = [];
 
         /* Get all the users that isn't the user requesting the list */
-        pool.request()
-        .query(`select * from auth where not username = '${username}'`)
-        .then(result => {
-            const users = result.recordset;
-            
-            for (var i = 0; i < users.length; i++) {
-                getProfile(pool, users[i])
-                .then(user => {
-                    onlineUsers.push(user);
-                })
-            } 
-            /* Set time out to let promises resolve */
-            setTimeout(() => {
-                resolve(onlineUsers);
-            }, 500)
+        updateLastSeen(pool, username)
+        .then(complete => {
+            pool.request()
+            .query(`select * from auth where not username = '${username}'`)
+            .then(result => {
+                const users = result.recordset;
+                
+                for (var i = 0; i < users.length; i++) {
+                    getProfile(pool, users[i])
+                    .then(user => {
+                        onlineUsers.push(user);
+                    })
+                } 
+                /* Set time out to let promises resolve */
+                setTimeout(() => {
+                    resolve(onlineUsers);
+                }, 750)
+            })
+            .catch(err => {
+                reject(err);
+            })
         })
-        .catch(err => {
-            reject(err);
-        })
-    
     })
 }
 
