@@ -1,148 +1,107 @@
-const auth = require('./auth');
-const uploader = require('./messages');
+const auth = require('./auth')
+const uploader = require('./messages')
 
-const handleGetProfile = (req, res, pool) => {
-
+const handleGetProfile = (req, res, db) => {
     /* Identify user from query string */
-    const { username } = req.query;
+    const { username } = req.query
     
     if (!username) {
-        return res.status(400).json({ code: 3 });
+        return res.status(400).json({ code: 3 })
     }
 	
-    pool.request()
-    .query(`select * from profile where username = '${username}'`)
+    db.select('*').from('profile')
+    .where('username', '=', username)
     .then(result => {
-        if (result.recordset.length !== 0) {
-            const user = result.recordset[0];
-            return res.status(200).json({ code: 0, user: user });
+        if (result != "") {
+            return res.status(200).json({ code: 0, user: result[0] })
         }
         else {
-            return res.status(404).json({ code: 5 });
+            return res.status(404).json({ code: 5 })
         }
     })
-    .catch(err => {
-        return res.status(500).json({ code: 4 });
-    })
+    .catch(err => res.status(500).json({ code: 4 }))
 }
 
 
-const handleSaveProfile = (req, res, bcrypt, pool) => {
-
+const handleSaveProfile = (req, res, bcrypt, db) => {
     /* Validate user */
-    const { username, password } = req.body;
+    const { username, password } = req.body
 
     if (!username || !password) {
-        return res.status(500).json({ code: 4 });
+        return res.status(500).json({ code: 3 })
     }
 
-    auth.validateUserWithUsername(pool, bcrypt, username, password)
+    auth.validateUserWithUsername(db, bcrypt, username, password)
     .then(isValid => {
         if (isValid) {
-            return saveProfile(req, res, pool);
+            return saveProfile(req, res, db)
         }
         else {
-            return res.status(403).json({ code: 1 });
+            return res.status(403).json({ code: 1 })
         }
     })
-    .catch(err => {
-        return res.status(500).json({ code: 4 });
-    })
+    .catch(err => res.status(500).json({ code: 4 }))
 }
 
-const saveProfile = (req, res, pool) => {
+const saveProfile = (req, res, db) => {
+    const { username, about, birthday, location, occupation, picture } = req.body
 
-    const { username, about, birthday, location, occupation, picture } = req.body;
     if (picture) {
-        uploader.getUrl(picture)
+        uploader.getUrl(picture, 1)
         .then(url => {
-            updateProfileUrl(pool, username, about, birthday, location, occupation, url)
-            .then(complete => {
-                if (complete) {
-                    pool.request()
-                    .query(`select * from profile where username = '${username}'`)
-                    .then(result => {
-                        const user = result.recordset[0];
-                        return res.status(200).json({ code: 0, user: user });
-                    })
-                    .catch(() => {
-                        return res.status(500).json({ code: 4});    
-                    })
-                }
-                else {
-                    return res.status(500).json({ code: 4});
-                }
+            updateProfileUrl(db, username, about, birthday, location, occupation, url)
+            .then(() => {
+                db.select('*').from('profile')
+                .where('username', '=', username)
+                .then(result => res.status(200).json({ code: 0, user: result[0] }))
+                .catch(() => res.status(500).json({ code: 4 }))
             })
-            .catch(err => {
-                return res.status(500).json({ code: 4});
-            })
+            .catch(err => res.status(500).json({ code: 4 }))
         })
-        .catch(err => {
-            return res.status(500).json({ code: 4});
-        })
+        .catch(err => res.status(500).json({ code: 4 }))
     }
     else {
-        updateProfile(pool, username, about, birthday, location, occupation)
-        .then(complete => {
-            if (complete) {
-                pool.request()
-                .query(`select * from profile where username = '${username}'`)
-                .then(result => {
-                    const user = result.recordset[0];
-                    return res.status(200).json({ code: 0, user: user });
-                })
-                .catch(() => {
-                    return res.status(500).json({ code: 4});    
-                })
-            }
-            else {
-                return res.status(500).json({ code: 4});
-            }
+        updateProfile(db, username, about, birthday, location, occupation)
+        .then(() => {
+            db.select('*').from('profile')
+            .where('username', '=', username)
+            .then(result => {
+                return res.status(200).json({ code: 0, user: result[0] })
+            })
+            .catch(err => res.status(500).json({ code: 4 }))
         })
+        .catch(err => res.status(500).json({ code: 4}))
     }
 }
 
-const updateProfileUrl = (pool, username, about, birthday, location, occupation, picture) => {
-
+const updateProfileUrl = (db, username, about, birthday, location, occupation, picture) => {
     return new Promise((resolve, reject) => {
-        pool.request()
-        .query(`update profile 
-                set about = '${about}',
-                birthday = '${birthday}',
-                location = '${location}',
-                occupation = '${occupation}',
-                picture = '${picture}'
-                where username = '${username}'
-        `)
-        .then(() => {
-            resolve(true);
+        db('profile').update({
+            about,
+            birthday,
+            location,
+            occupation,
+            picture
         })
-        .catch(err => {
-            resolve(false);
-        })
+        .where('username', '=', username)
+        .then(() => resolve(true))
+        .catch(err => reject(err))
     })
 }
 
-const updateProfile = (pool, username, about, birthday, location, occupation) => {
+const updateProfile = (db, username, about, birthday, location, occupation) => {
     return new Promise((resolve, reject) => {
-        pool.request()
-        .query(`update profile 
-                set about = '${about}',
-                birthday = '${birthday}',
-                location = '${location}',
-                occupation = '${occupation}'
-                where username = '${username}'
-        `)
-        .then(() => {
-            resolve(true);
+        db('profile').update({
+            about,
+            birthday,
+            location,
+            occupation
         })
-        .catch(err => {
-            resolve(false);
-        })
+        .where('username', '=', username)
+        .then(() => resolve(true))
+        .catch(err => reject(err))
     })
 }
-
-
 
 module.exports = {
     handleGetProfile,

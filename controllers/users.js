@@ -1,32 +1,29 @@
-const auth = require('./auth');
+const auth = require('./auth')
 
-const handleDeleteUser = (req, res, bcrypt, pool) => {
-
-    const { username, password } = req.body;
+const handleDeleteUser = (req, res, bcrypt, db) => {
+    const { username, password } = req.body
 
     if (!username || !password) {
-        return res.status(400).json({ code: 3 });
+        return res.status(400).json({ code: 3 })
     }
 
-    auth.validateUserWithUsername(pool, bcrypt, username, password)
+    auth.validateUserWithUsername(db, bcrypt, username, password)
     .then(isValid => {
         if (isValid) {
-            pool.request()
-            .query(`delete from auth where username = '${username}'`)
+            db('auth')
+            .where('username', '=', username)
+            .del()
             .then(() => {
-                pool.request()
-                .query(`delete from profile where username = '${username}'`)
-                .then(() => {
-                    return res.status(200).json({ code: 0 });
-                })
-                .catch(err => {
-                    return res.status(500).json({ code: 4 });
-                })
+                db('profile')
+                .where('username', '=', username)
+                .del()
+                .then(() => res.status(200).json({ code: 0 }))
+                .catch(err => res.status(500).json({ code: 4 }))
             })
         }
-        /* password mismatch */
+        /* Invalid password */
         else {
-            return res.status(403).json({ code: 1 });
+            return res.status(403).json({ code: 1 })
         }
     })
 }

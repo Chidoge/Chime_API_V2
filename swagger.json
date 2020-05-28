@@ -1,14 +1,11 @@
 {
     "swagger": "2.0",
     "info": {
-      "description": "Swagger UI for Chime - MSA phase 2",
+      "description": "Swagger UI for the Chime API",
       "version": "1.0.0",
-      "title": "Swagger - Chime",
-      "contact": {
-        "email": "lincoln.choy1997@gmail.com"
-      }
+      "title": "Swagger - Chime"
     },
-    "host": "chimemsa.azurewebsites.net",
+    "host": "chime-api-v2.herokuapp.com",
     "basePath": "",
     "tags": [
       {

@@ -15,49 +15,71 @@
  *      picture: string
  * }
  */
-const handleRegister = (req, res, bcrypt , pool) => {
+const handleRegister = (req, res, bcrypt , db) => {
 
-    const { username, first, last, password } = req.body;
+    const { username, first, last, password } = req.body
 
     if (!username || !first || !last || !password) {
-        return res.status(400).json({ code : 3 });
+        return res.status(400).json({ code : 3 })
     }
 
-    pool.request()
-    .query(`select username from auth where username = '${username}'`)
-    .then(result => {
-        if (result.recordset.length !== 0) {
-            return res.status(403).json({ code: 2 });
+    db.select('username').from('auth')
+    .where('username', '=', username)
+    .then(data => {
+        if (data != "") {
+            if (daata[0].username) {
+                return res.status(403).json({ code: 2 })
+            }
         }
         else {
-
             /* Synchronous hashing */
-            const hash = bcrypt.hashSync(password);
-            const lastSeen = ((new Date).getTime()).toString();
-            pool.request()
-            .query(`insert into auth (hash, username, lastseen) values ('${hash}', '${username}', '${lastSeen}');`)
-            .then(result => {
-                pool.request()
-                .query(`insert into profile (username, first, last, picture) values ('${username}', '${first}', '${last}', '${'https://i.imgur.com/FSgbIi4.png'}');`)
-                .then(result => {
-                    return res.status(200).json({ code : 0, 
-                        user: {
-                            username: username,
-                            first : first, 
-                            last : last, 
-                            picture : 'https://i.imgur.com/FSgbIi4.png'
-                        }}) 
-                })
-                .catch(err => {
-                    return res.status(500).json({ code: 4 });
-                })
-                
-            })
-            .catch(err => {
-                return res.status(500).json({ code: 4 });
-            })
+            const hash = bcrypt.hashSync(password)
+            
+            /* Transaction for consistency */
+			db.transaction(trx => {
+				const lastSeen = ((new Date).getTime()).toString()
+				
+				/* First insert into login table */
+				trx.insert({
+                    hash,
+                    username,
+					lastSeen
+				})
+				.into('auth')
+				.returning('username')
+				.then(username => {
+					return trx('profile')
+					.returning('*')
+					.insert({
+                        username : username[0],
+                        first,
+                        last,
+						picture: 'https://i.imgur.com/FSgbIi4.png'
+					})
+					.then(user => {
+						/* On successful API call, return the user object to the front-end */
+                        return res.status(200).json({ code : 0, 
+                                                        user: {
+                                                            first : user[0].first, 
+                                                            last : user[0].last, 
+                                                            id : user[0].id, 
+                                                            picture : 'https://i.imgur.com/FSgbIi4.png'
+                                                        } 
+                        })
+					})
+				})
+				/* Commit changes */
+				.then(trx.commit)
+				/* Delete transaction if failed anywhere */
+				.catch(trx.rollback)
+			})
+			/* Return db error code if failed */
+			.catch(err => {
+                console.log(err)
+                res.json({ code : 4 })
+            })	
         }
-    });
+    })
 }
 
 
@@ -76,104 +98,82 @@ const handleRegister = (req, res, bcrypt , pool) => {
  *      picture: string
  * }
  */
-const handleSignIn = (req, res, bcrypt, pool) => {
+const handleSignIn = (req, res, bcrypt, db) => {
 	
 	/* Destructure request body */
-	const { username, password } = req.body;
+	const { username, password } = req.body
 	if (!(username && password)) {
-		return res.status(400).json({ code : 3 });
+		return res.status(400).json({ code : 3 })
     }
 
-	validateUserWithUsername(pool, bcrypt, username, password)
+	validateUserWithUsername(db, bcrypt, username, password)
 	.then(isValid => {
 		if (isValid) {
-			updateLastSeen(pool, username)
+			updateLastSeen(db, username)
 			.then(() => {
-				getProfile(pool, username)
+				getProfile(db, username)
 				.then(profile => {
                     /* Profile must exist after validation*/
-					return res.status(200).json({ 
+					return res.status(200).json({
 						code: 0, 
 						user : {
-							username: username,
+							username,
 							first : profile.first, 
 							last : profile.last, 
 							picture : profile.picture
 						}		 
-					});
-					
+					})
 				})
 				.catch(err => {
-                    return res.status(500).json({ code: 4 });
+                    return res.status(500).json({ code: 4 })
 				})
 			})
 		}
 		/* On password mismatch, send the error code to the front-end */
 		else {
-			return res.status(403).json({ code : 1 });
+			return res.status(403).json({ code : 1 })
 		}
 	})
 }
 
-const getProfile = (pool, username) => {
-
+const getProfile = (db, username) => {
     return new Promise((resolve, reject) => {
-
-        pool.request()
-        .query(`select * from profile where username = '${username}'`)
-        .then(result => {
-            const profile = result.recordset[0];
-            resolve(profile);
+        db.select('*').from('profile')
+        .where('username', '=', username)
+        .then(profile => {
+            resolve(profile[0])
         })
-        .catch(err => {
-            resolve(false);
-        })
-        
+        .catch(err => reject(err))
     })
 }
 
-const updateLastSeen = (pool, username) => {
-
-    return new Promise((resolve, reject) => {
-
-        const timeNow = (new Date).getTime();
-        pool.request()
-        .query(`update auth set lastseen = '${timeNow}' where username = '${username}'`)
-        .then(result => {
-            resolve(true);
-        })
-        .catch(err => {
-            resolve(false);
-        })
-        
-    })
+const updateLastSeen = async (db, username) => {
+    const timeNow = (new Date).getTime()
+    try {
+        await db('auth').update({ lastSeen: `${timeNow}` }).where('username', '=', username)
+    }
+    catch (err) {
+        throw err
+    }
 }
 
-
-const validateUserWithUsername = (pool, bcrypt, username, password) => {
+const validateUserWithUsername = (db, bcrypt, username, password) => {
     return new Promise((resolve, reject) => {
-        pool.request()
-        .query(`select hash from auth where username = '${username}'`)
+        db.select('hash').from('auth')
+        .where('username', '=', username)
         .then(result => {
-            if (result.recordset.length !== 0) {
-                const user = result.recordset[0];
+            if (result != "") {
+                const user = result[0]
                 /* Use synchronous hash compare */
-                const isValid = bcrypt.compareSync(password,user.hash);
-                resolve(isValid);
+                const isValid = bcrypt.compareSync(password,user.hash)
+                resolve(isValid)
             }
             else {
-                resolve(false);
+                resolve(false)
             }
         })
-        .catch(err => {
-            resolve(false);
-        })
     })
-
-
-
 }
-
 
 module.exports = {
     handleRegister : handleRegister,

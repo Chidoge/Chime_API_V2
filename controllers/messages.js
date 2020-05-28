@@ -1,7 +1,7 @@
-const cloudinary = require('cloudinary');
-const cloudConfig = require('../config');
+const cloudinary = require('cloudinary')
+const cloudConfig = require('../config')
 
-const auth = require('./auth');
+const auth = require('./auth')
 
 /**
  * This API handler takes 5 parameters
@@ -14,33 +14,27 @@ const auth = require('./auth');
  * Returns - 
  * 1 - code: number - indicates whether API was successful
  */
-const handleSendMessage = (req, res, bcrypt, pool) => {
+const handleSendMessage = (req, res, bcrypt, db) => {
 
 	/* Get body of request */
-	const { sender, destination, password, message } = req.body;
-    let { isImage } = req.body;
-    isImage = +isImage;
+	const { sender, destination, password, message } = req.body
+    let { isImage } = req.body
+    isImage = +isImage
 
 	if (!sender || !password || !destination || !message) {
-		return res.status(400).json({ code : 3 });
+		return res.status(400).json({ code : 3 })
 	}
     
-    auth.validateUserWithUsername(pool, bcrypt, sender, password)
+    auth.validateUserWithUsername(db, bcrypt, sender, password)
     .then(isValid => {
         if (isValid) {
-            insertData(pool, sender, destination, message, isImage)
-            .then(complete => {
-                if (complete) {
-                    return res.status(200).json({ code : 0 });
-                }
-                else {
-                    return res.status(500).json({ code: 4 });
-                }
-            })
+            insertData(db, sender, destination, message, isImage)
+            .then(() => res.status(200).json({ code : 0 }))
+            .catch(err => res.status(500).json({ code: 4 }))
         }
-        /* password mismatch */
+        /* Password mismatch */
         else {
-            return res.status(403).json({ code : 1 });
+            return res.status(403).json({ code : 1 })
         }
     })
 }
@@ -61,94 +55,74 @@ const handleSendMessage = (req, res, bcrypt, pool) => {
  *      isImage: number
  * }
  */
-const handleFetchMessages = (req, res, bcrypt, pool) => {
-
+const handleFetchMessages = (req, res, bcrypt, db) => {
 	/* Get body of request */
-	const { sender, destination, password } = req.body;
+    const { sender, destination, password } = req.body
 
 	if (!sender || !password || !destination) {
-
-		return res.status(400).json({ code : 3 });
+		return res.status(400).json({ code : 3 })
 	}
 
-    auth.validateUserWithUsername(pool, bcrypt, sender, password)
+    auth.validateUserWithUsername(db, bcrypt, sender, password)
     .then(isValid => {
         if (isValid) {
-            pool.request()
-            .query(`
-                select * from messages
-                where sender = '${sender}' and destination = '${destination}'
-                or sender = '${destination}' and destination = '${sender}'
-                order by timestamp
-            `)
-            .then(result => {
-                const messages = result.recordset;
-                return res.status(200).json({ code : 0 , messages : messages });
-            })
-            .catch(err => {
-                return res.status(500).json({ code: 4 });
-            })
-        
-        }
-        /* If password is wrong */
-        else {
-            return res.status(403).json({ code : 1 });
-        }
-    })
-}
-
-
-const insertData = (pool, sender, destination, message, isImage) => {
-
-    return new Promise((resolve, reject) => {
-        const timeStamp = (new Date).getTime();
-        if (isImage) {
-            getUrl(message)
-            .then(url => {
-                pool.request()
-                .query(`insert into messages (sender, destination, message, timestamp, isimage) values('${sender}', '${destination}', '${url}', '${timeStamp}', '${isImage}')`)
-                .then(result => {
-                    resolve(true);
+            db.select('*')
+                .from('messages')
+                .where(function() {
+                    this.where('sender', sender).andWhere('destination', destination)
+                }).orWhere(function() {
+                    this.where('sender', destination).andWhere('destination', sender)
                 })
-                /* Return error if failed */
-                .catch(err => {
-                    resolve(false);
-                });
-            })
-            /* If failed to upload */
-            .catch(err => {
-                resolve(false);
-            })
-        } else {
-            pool.request()
-            .query(`insert into messages (sender, destination, message, timestamp, isimage) values('${sender}', '${destination}', '${message}', '${timeStamp}', '${isImage}')`)
-            .then(result => {
-                resolve(true);
-            })
-            /* Return error if failed */
-            .catch(err => {
-                resolve(false);
-            });
+                .orderBy('timestamp')
+                .then(messages => {
+                    return res.status(200).json({ code : 0 , messages })
+                })
+                .catch(err => res.status(500).json({ code: 4 }))
         }
+        /* Invalid password */
+        else {
+            return res.status(403).json({ code : 1 })
+        }
+    })
+}
+
+const insertData = (db, sender, destination, message, isImage) => {
+    return new Promise((resolve, reject) => {
+        const timestamp = (new Date).getTime()
+
+        getUrl(message, isImage)
+        .then(proccessedMessage => {
+            db.insert({
+                sender,
+                destination,
+                message: proccessedMessage,
+                isImage,
+                timestamp
+            })
+            .into('messages')
+            .then(() => resolve())
+            /* Return error if failed to save to DB*/
+            .catch(err => reject(err))
+        })
+        /* If failed to upload */
+        .catch(err => reject(err))
     })
 
 }
-
 
 /* Method uses cloudinary API to store images */
-const getUrl = (b64String) => {
-
+const getUrl = (b64String, isImage) => {
     return new Promise((resolve, reject) => {
-        cloudConfig.config();
-        cloudinary.v2.uploader.upload(b64String, { resource_type: 'image', quality: 'auto:low' })
-        .then(result => {
-            resolve(result.secure_url);
-        })
-        .catch(() => {
-            reject();
-        })
-    })
+        /* Skip if ordinary image */
+        if (isImage === 0) {
+            resolve(b64String)
+        }
 
+        cloudConfig.config()
+        cloudinary.v2.uploader.upload(b64String, { resource_type: 'image', quality: 'auto:low' })
+        .then(result => resolve(result.secure_url))
+        .catch(err => console.log(err))
+    })
 }
 
 module.exports = {
