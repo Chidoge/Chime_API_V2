@@ -27,7 +27,7 @@ const handleRegister = (req, res, bcrypt , db) => {
     .where('username', '=', username)
     .then(data => {
         if (data != "") {
-            if (daata[0].username) {
+            if (data[0].username) {
                 return res.status(403).json({ code: 2 })
             }
         }
